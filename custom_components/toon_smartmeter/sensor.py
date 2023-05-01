@@ -125,7 +125,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         icon="mdi:flash",
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,     # else injection is not registered
     ),
     SensorEntityDescription(
         key="elecusagecntlow",
@@ -133,7 +133,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         icon="mdi:flash",
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,      # else injection is not registered
     ),
     SensorEntityDescription(
         key="elecusagecnthigh",
@@ -141,7 +141,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         icon="mdi:flash",
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,     # else injection is not registered
     ),
     SensorEntityDescription(
         key="elecprodcntlow",
@@ -344,6 +344,7 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v3_5",
                         "HAE_METER_v4_6",
                         "HAE_METER_HEAT_5",
+                        "HOME_ENERGY_METER",    # added for personal config
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
@@ -363,6 +364,7 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v3_4",
                         "HAE_METER_v4_4",
                         "HAE_METER_HEAT_3",
+                        "HOME_ENERGY_METER",    # added for personal config
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
@@ -380,6 +382,7 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v2_6",
                         "HAE_METER_v3_7",
                         "HAE_METER_v4_7",
+                        "HOME_ENERGY_METER",    # added for personal config
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
@@ -397,6 +400,7 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v2_4",
                         "HAE_METER_v3_5",
                         "HAE_METER_v4_5",
+                        "HOME_ENERGY_METER",    # added for personal config
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
