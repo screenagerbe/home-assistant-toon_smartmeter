@@ -121,7 +121,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
     ),
     SensorEntityDescription(
         key="elecusagecntpulse",
-        name="P1 Power Use Cnt",
+        name="Power Use Cnt",
         icon="mdi:flash",
         native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
@@ -325,6 +325,17 @@ class ToonSmartMeterSensor(SensorEntity):
             for key in energy:
                 dev = energy[key]
 
+                """elec verbruik pulse"""
+                if (
+                    key in ["dev_2.2", "dev_3.2", "dev_4.2", "dev_7.2", "dev_9.2"]
+                    and safe_get(
+                        energy, [key, "CurrentElectricityQuantity"], default="NaN"
+                    )
+                    != "NaN"
+                ):
+                    self._dev_id["elecusageflowpulse"] = key
+                    self._dev_id["elecusagecntpulse"] = key
+
                 """gas verbruik"""
                 if (
                     dev["type"] in ["gas", "HAE_METER_v2_1", "HAE_METER_v3_1", "HAE_METER_v4_1"]
@@ -382,7 +393,11 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v2_6",
                         "HAE_METER_v3_7",
                         "HAE_METER_v4_7",
+<<<<<<< HEAD
                         "HOME_ENERGY_METER",    # added for personal config
+=======
+                        "HAE_METER_HEAT_6",
+>>>>>>> 683463dead89662a2b46669bf3e33be8f643a3f8
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
@@ -400,7 +415,11 @@ class ToonSmartMeterSensor(SensorEntity):
                         "HAE_METER_v2_4",
                         "HAE_METER_v3_5",
                         "HAE_METER_v4_5",
+<<<<<<< HEAD
                         "HOME_ENERGY_METER",    # added for personal config
+=======
+                        "HAE_METER_HEAT_4",
+>>>>>>> 683463dead89662a2b46669bf3e33be8f643a3f8
                     ]
                     and safe_get(
                         energy, [key, "CurrentElectricityQuantity"], default="NaN"
@@ -454,7 +473,6 @@ class ToonSmartMeterSensor(SensorEntity):
                     self._dev_id["waterquantity"] = key
                     self._dev_id["waterflow"] = key
 
-
             self._discovery = True
             _LOGGER.debug("Discovered: '%s'", self._dev_id)
 
@@ -474,40 +492,16 @@ class ToonSmartMeterSensor(SensorEntity):
 
             """elec verbruik puls"""
         elif self._type == "elecusageflowpulse":
-            if "dev_3.2" in energy:
-                self._state = self._validateOutput(
-                    energy["dev_3.2"]["CurrentElectricityFlow"]
-                )
-            elif "dev_2.2" in energy:
-                self._state = self._validateOutput(
-                    energy["dev_2.2"]["CurrentElectricityFlow"]
-                )
-            elif "dev_4.2" in energy:
-                self._state = self._validateOutput(
-                    energy["dev_4.2"]["CurrentElectricityFlow"]
-                )
-            elif "dev_7.2" in energy:
-                self._state = self._validateOutput(
-                    energy["dev_7.2"]["CurrentElectricityFlow"]
+            if self._type in self._dev_id:
+                self._state = (
+                    float(energy[self._dev_id[self._type]]["CurrentElectricityFlow"])
                 )
 
             """elec verbruik teller puls"""
         elif self._type == "elecusagecntpulse":
-            if "dev_3.2" in energy:
-                self._state = self._validateOutput(
-                    float(energy["dev_3.2"]["CurrentElectricityQuantity"]) / 1000
-                )
-            elif "dev_2.2" in energy:
-                self._state = self._validateOutput(
-                    float(energy["dev_2.2"]["CurrentElectricityQuantity"]) / 1000
-                )
-            elif "dev_4.2" in energy:
-                self._state = self._validateOutput(
-                    float(energy["dev_4.2"]["CurrentElectricityQuantity"]) / 1000
-                )
-            elif "dev_7.2" in energy:
-                self._state = self._validateOutput(
-                    float(energy["dev_7.2"]["CurrentElectricityQuantity"]) / 1000
+            if self._type in self._dev_id:
+                self._state = (
+                    float(energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]) / 1000
                 )
 
             """elec verbruik laag"""
@@ -596,6 +590,7 @@ class ToonSmartMeterSensor(SensorEntity):
                 self._state = self._validateOutput(
                     energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
                 )
+
             """zon op toon teller"""
         elif self._type == "elecsolarcnt":
             if "dev_4.export" in energy:
@@ -638,7 +633,6 @@ class ToonSmartMeterSensor(SensorEntity):
                 self._state = (
                     float(energy[self._dev_id[self._type]]["CurrentWaterFlow"])
                 )
-
 
         _LOGGER.debug("Device: {} State: {}".format(self._type, self._state))
 
