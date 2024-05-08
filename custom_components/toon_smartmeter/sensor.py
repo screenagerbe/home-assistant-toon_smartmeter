@@ -18,14 +18,11 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
 )
+from homeassistant.const import UnitOfVolume, UnitOfEnergy, UnitOfPower, UnitOfTemperature
 from homeassistant.const import (
     CONF_HOST,
     CONF_PORT,
     CONF_RESOURCES,
-    ENERGY_KILO_WATT_HOUR,
-    POWER_WATT,
-    VOLUME_LITERS,
-    VOLUME_CUBIC_METERS,
 )
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
@@ -42,6 +39,7 @@ MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=10)
 SENSOR_PREFIX = "Toon "
 ATTR_MEASUREMENT = "measurement"
 ATTR_SECTION = "section"
+CONF_POWERPLUGS = "powerplugs"
 
 SENSOR_LIST = {
     "gasused",
@@ -68,7 +66,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="gasused",
         name="Gas Used Last Hour",
         icon="mdi:gas-cylinder",
-        native_unit_of_measurement=VOLUME_CUBIC_METERS,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.GAS,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -76,7 +74,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="gasusedcnt",
         name="Gas Used Cnt",
         icon="mdi:gas-cylinder",
-        native_unit_of_measurement=VOLUME_CUBIC_METERS,
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.GAS,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
@@ -84,14 +82,15 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecusageflowpulse",
         name="Power Use",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     SensorEntityDescription(
         key="elecusageflowlow",
         name="P1 Power Use Low",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -99,7 +98,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecusageflowhigh",
         name="P1 Power Use High",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -107,7 +106,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecprodflowlow",
         name="P1 Power Prod Low",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -115,7 +114,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecprodflowhigh",
         name="P1 Power Prod High",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -123,7 +122,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecusagecntpulse",
         name="Power Use Cnt",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,     # else injection is not registered
     ),
@@ -131,7 +130,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecusagecntlow",
         name="P1 Power Use Cnt Low",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,      # else injection is not registered
     ),
@@ -139,7 +138,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecusagecnthigh",
         name="P1 Power Use Cnt High",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL,     # else injection is not registered
     ),
@@ -147,7 +146,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecprodcntlow",
         name="P1 Power Prod Cnt Low",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
@@ -155,7 +154,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecprodcnthigh",
         name="P1 Power Prod Cnt High",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
@@ -163,7 +162,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecsolar",
         name="P1 Power Solar",
         icon="mdi:flash",
-        native_unit_of_measurement=POWER_WATT,
+        native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
@@ -171,7 +170,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="elecsolarcnt",
         name="P1 Power Solar Cnt",
         icon="mdi:flash",
-        native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
@@ -185,7 +184,7 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         key="waterquantity",
         name="P1 waterquantity",
         icon="mdi:water",
-        native_unit_of_measurement=VOLUME_LITERS,
+        native_unit_of_measurement=UnitOfVolume.LITERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
     ),
@@ -197,6 +196,23 @@ SENSOR_TYPES: Final[tuple[SensorEntityDescription, ...]] = (
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.MEASUREMENT,
     ),
+    SensorEntityDescription(
+        key="powerplugflow",
+        name="PowerPlug Power Use",
+        icon="mdi:flash",
+        native_unit_of_measurement=UnitOfPower.WATT,
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    SensorEntityDescription(
+        key="powerplugcnt",
+        name="PowerPlug Power Use Cnt",
+        icon="mdi:flash",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+    ),
+
 )
 
 
@@ -207,6 +223,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_RESOURCES, default=list(SENSOR_LIST)): vol.All(
             cv.ensure_list, [vol.In(SENSOR_LIST)]
         ),
+        vol.Optional(CONF_POWERPLUGS, default=list()): cv.ensure_list,
     }
 )
 
@@ -222,8 +239,10 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     entities = []
     for description in SENSOR_TYPES:
         if description.key in config[CONF_RESOURCES]:
-            sensor = ToonSmartMeterSensor(description, data)
-            entities.append(sensor)
+            entities.append(ToonSmartMeterSensor(description, data, ""))
+        if description.key in ["powerplugflow", "powerplugcnt"]:
+            for powerplug in config[CONF_POWERPLUGS]:
+                entities.append(ToonSmartMeterSensor(description, data, powerplug))
     async_add_entities(entities, True)
     return True
 
@@ -237,63 +256,53 @@ class ToonSmartMeterData(object):
 
         self._session = session
         self._url = BASE_URL.format(host, port)
-        self._data = None
+        self.data = {}
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_update(self):
         """Download and update data from Toon."""
 
         try:
-            with async_timeout.timeout(5):
+            async with async_timeout.timeout(5):
                 response = await self._session.get(
                     self._url, headers={"Accept-Encoding": "identity"}
                 )
+            self.data = await response.json(content_type="text/javascript")
+            _LOGGER.debug("Data received from Toon: %s", self.data)
         except aiohttp.ClientError:
-            _LOGGER.error("Cannot poll Toon using url: %s", self._url)
-            return
+            _LOGGER.error("Cannot connect to Toon using url '%s'", self._url)
         except asyncio.TimeoutError:
             _LOGGER.error(
-                "Timeout error occurred while polling Toon using url: %s", self._url
+                "Timeout error occurred while connecting to Toon using url '%s'",
+                self._url
             )
-            return
-        except Exception as err:
-            _LOGGER.error("Unknown error occurred while polling Toon: %s", err)
-            self._data = None
-            return
-
-        try:
-            self._data = await response.json(content_type="text/javascript")
-            _LOGGER.debug("Data received from Toon: %s", self._data)
-        except Exception as err:
-            _LOGGER.error("Cannot parse data received from Toon: %s", err)
-            self._data = None
-
-    @property
-    def latest_data(self):
-        """Return the latest data object."""
-        if self._data:
-            return self._data
-        return None
+        except (TypeError, KeyError) as err:
+            _LOGGER.error(f"Cannot parse data received from Toon: %s", err)
 
 
 class ToonSmartMeterSensor(SensorEntity):
     """Representation of a Smart Meter connected to Toon."""
 
-    def __init__(self, description: SensorEntityDescription, data):
+    def __init__(self, description: SensorEntityDescription, data, powerplug):
         """Initialize the sensor."""
-        self.entity_description = description
+        self._entity_description = description
         self._data = data
 
+        self.device_type = self._entity_description.key
+        self.powerplug_name = powerplug
+
+        if self._entity_description.key in ["powerplugflow", "powerplugcnt"]:
+            self._attr_name = f"{SENSOR_PREFIX} {self.powerplug_name} {self._entity_description.name}"
+            self._attr_unique_id = f"{SENSOR_PREFIX}_{self.powerplug_name}_{self._entity_description.name}"
+        else:
+            self._attr_name = f"{SENSOR_PREFIX} {self._entity_description.name}"
+            self._attr_unique_id = f"{SENSOR_PREFIX}_{self._entity_description.name}"
+
+        self._attr_icon = self._entity_description.icon
+        self._attr_state_class = self._entity_description.state_class
+        self._attr_native_unit_of_measurement = self._entity_description.native_unit_of_measurement
+        self._attr_device_class = self._entity_description.device_class
         self._state = None
-
-        self._type = self.entity_description.key
-        self._attr_icon = self.entity_description.icon
-        self._attr_name = SENSOR_PREFIX + self.entity_description.name
-        self._attr_state_class = self.entity_description.state_class
-        self._attr_native_unit_of_measurement = self.entity_description.native_unit_of_measurement
-        self._attr_device_class = self.entity_description.device_class
-        self._attr_unique_id = f"{SENSOR_PREFIX}_{self._type}"
-
         self._discovery = False
         self._dev_id = {}
 
@@ -301,7 +310,7 @@ class ToonSmartMeterSensor(SensorEntity):
         """Return 0 if the output from the Toon is NaN (happens after a reboot)"""
         try:
             if value.lower() == "nan":
-                value = 0    @property
+                value = 0
         except:
             return value
 
@@ -316,7 +325,7 @@ class ToonSmartMeterSensor(SensorEntity):
         """Get the latest data and use it to update our sensor state."""
 
         await self._data.async_update()
-        energy = self._data.latest_data
+        energy = self._data.data
 
         if not energy:
             return
@@ -427,6 +436,7 @@ class ToonSmartMeterSensor(SensorEntity):
                 if (
                     dev["type"]
                     in [
+                        "elec_solar",
                         "HAE_METER_v3_3",
                         "HAE_METER_v4_3",
                     ]
@@ -440,8 +450,9 @@ class ToonSmartMeterSensor(SensorEntity):
 
                 """heat"""
                 if (
-                    dev["type"]
+                    dev["name"]
                     in [
+                        "heat",
                         "HAE_METER_v3_8",
                         "HAE_METER_v4_8",
                         "HAE_METER_HEAT_1",
@@ -471,103 +482,103 @@ class ToonSmartMeterSensor(SensorEntity):
             _LOGGER.debug("Discovered: '%s'", self._dev_id)
 
             """gas verbruik laatste uur"""
-        if self._type == "gasused":
-            if self._type in self._dev_id:
+        if self.device_type == "gasused":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentGasFlow"]) / 1000
+                    float(energy[self._dev_id[self.device_type]]["CurrentGasFlow"]) / 1000
                 )
 
             """gas verbruik teller laatste uur"""
-        elif self._type == "gasusedcnt":
-            if self._type in self._dev_id:
+        elif self.device_type == "gasusedcnt":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentGasQuantity"]) / 1000
+                    float(energy[self._dev_id[self.device_type]]["CurrentGasQuantity"]) / 1000
                 )
 
             """elec verbruik puls"""
-        elif self._type == "elecusageflowpulse":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusageflowpulse":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentElectricityFlow"])
+                    float(energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"])
                 )
 
             """elec verbruik teller puls"""
-        elif self._type == "elecusagecntpulse":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusagecntpulse":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]) / 1000
+                    float(energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]) / 1000
                 )
 
             """elec verbruik laag"""
-        elif self._type == "elecusageflowlow":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusageflowlow":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
-                    energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
+                    energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"]
                 )
 
             """elec verbruik teller laag"""
-        elif self._type == "elecusagecntlow":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusagecntlow":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]
                     )
                     / 1000
                 )
 
             """elec verbruik hoog/normaal"""
-        elif self._type == "elecusageflowhigh":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusageflowhigh":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
-                    energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
+                    energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"]
                 )
 
             """elec verbruik teller hoog/normaal"""
-        elif self._type == "elecusagecnthigh":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecusagecnthigh":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]
                     )
                     / 1000
                 )
 
             """elec teruglever laag"""
-        elif self._type == "elecprodflowlow":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecprodflowlow":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
-                    energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
+                    energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"]
                 )
 
             """elec teruglever teller laag"""
-        elif self._type == "elecprodcntlow":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecprodcntlow":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]
                     )
                     / 1000
                 )
 
             """elec teruglever hoog/normaal"""
-        elif self._type == "elecprodflowhigh":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecprodflowhigh":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
-                    energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
+                    energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"]
                 )
 
             """elec teruglever teller hoog/normaal"""
-        elif self._type == "elecprodcnthigh":
-            if self._type in self._dev_id:
+        elif self.device_type == "elecprodcnthigh":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]
                     )
                     / 1000
                 )
 
             """zon op toon"""
-        elif self._type == "elecsolar":
+        elif self.device_type == "elecsolar":
             if "dev_4.export" in energy:
                 self._state = self._validateOutput(
                     energy["dev_4.export"]["CurrentElectricityFlow"]
@@ -580,13 +591,13 @@ class ToonSmartMeterSensor(SensorEntity):
                 self._state = self._validateOutput(
                     energy["dev_7.export"]["CurrentElectricityFlow"]
                 )  
-            elif self._type in self._dev_id:
+            elif self.device_type in self._dev_id:
                 self._state = self._validateOutput(
-                    energy[self._dev_id[self._type]]["CurrentElectricityFlow"]
+                    energy[self._dev_id[self.device_type]]["CurrentElectricityFlow"]
                 )
 
             """zon op toon teller"""
-        elif self._type == "elecsolarcnt":
+        elif self.device_type == "elecsolarcnt":
             if "dev_4.export" in energy:
                 self._state = self._validateOutput(
                     float(energy["dev_4.export"]["CurrentElectricityQuantity"]) / 1000
@@ -599,36 +610,57 @@ class ToonSmartMeterSensor(SensorEntity):
                 self._state = self._validateOutput(
                     float(energy["dev_7.export"]["CurrentElectricityQuantity"]) / 1000
                 )             
-            elif self._type in self._dev_id:
+            elif self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentElectricityQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentElectricityQuantity"]
                     )
                     / 1000
                 )
 
-        elif self._type == "heat":
-            if self._type in self._dev_id:
+        elif self.device_type == "heat":
+            if self.device_type in self._dev_id:
                 self._state = self._validateOutput(
                     float(
-                        energy[self._dev_id[self._type]]["CurrentHeatQuantity"]
+                        energy[self._dev_id[self.device_type]]["CurrentHeatQuantity"]
                     )
                     / 1000
                 )
 
-        elif self._type == "waterquantity":
-            if self._type in self._dev_id:
+        elif self.device_type == "waterquantity":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentWaterQuantity"])
+                    float(energy[self._dev_id[self.device_type]]["CurrentWaterQuantity"])
                 )
 
-        elif self._type == "waterflow":
-            if self._type in self._dev_id:
+        elif self.device_type == "waterflow":
+            if self.device_type in self._dev_id:
                 self._state = (
-                    float(energy[self._dev_id[self._type]]["CurrentWaterFlow"])
+                    float(energy[self._dev_id[self.device_type]]["CurrentWaterFlow"])
                 )
 
-        _LOGGER.debug("Device: {} State: {}".format(self._type, self._state))
+        elif self.device_type == "powerplugflow":
+            for key in energy:
+                dev = energy[key]
+                if dev["name"] == self.powerplug_name:
+                    self._state = self._validateOutput(
+                        float(
+                            dev["CurrentElectricityFlow"]
+                        )
+                    )
+    
+        elif self.device_type == "powerplugcnt":
+            for key in energy:
+                dev = energy[key]
+                if dev["name"] == self.powerplug_name:
+                    self._state = self._validateOutput(
+                        float(
+                            dev["CurrentElectricityQuantity"]
+                        )
+                        / 1000
+                    )
+
+        _LOGGER.debug(f"Device: {self.device_type} State: {self._state} PowerPlug: {self.powerplug_name}")
 
 
 def safe_get(_dict, keys, default=None):
